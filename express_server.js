@@ -19,8 +19,6 @@ function generateRandomString() {
   return randomString;
 }
 
-console.log(generateRandomString());
-
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -43,13 +41,23 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  console.log("req.body:",req.body);  // Log the POST request body to the console
+  const shortURL = generateRandomString()
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls/:shortURL", (req, res) => { // THIS MUST BE BENEATH THE OTHER APP.GET LINES that begin with /urls.
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }; // MODIFIED!!!!!!
   res.render("urls_show", templateVars);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  console.log('testing the database:', urlDatabase);
+  console.log('param: ', req.params);
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {
