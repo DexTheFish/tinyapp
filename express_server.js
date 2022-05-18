@@ -62,8 +62,11 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.redirect("urls");
+  const shortURL = req.params.shortURL; //req.params reads from the URL
+  const longURL = req.body.longURL; // req.body reads from the FORM
+  urlDatabase[shortURL] = longURL; //reassign vx2Bz1 to another website
+
+  res.redirect("/urls");
 });
 
 app.get("/urls/:shortURL", (req, res) => { // THIS MUST BE BENEATH THE OTHER APP.GET LINES that begin with /urls.
