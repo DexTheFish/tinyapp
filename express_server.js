@@ -21,12 +21,20 @@ function generateRandomString() {
   return randomString;
 }
 
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
+
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/hello", (req, res) => { // example
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
 app.get("/urls/new", (req, res) => {
-  templateVars = { username: req.cookies["username"] }; // modified!!!!!!!!!!!!!!!!!!
+  templateVars = { username: req.cookies["username"] };
   res.render("urls_new", templateVars);
 });
 
@@ -34,12 +42,8 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]}; // MAY19
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 
@@ -78,7 +82,6 @@ app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL; //req.params reads from the URL
   const longURL = req.body.longURL; // req.body reads from the FORM
   urlDatabase[shortURL] = longURL; //reassign vx2Bz1 to another website
-
   res.redirect("/urls");
 });
 
@@ -87,8 +90,6 @@ app.get("/urls/:shortURL", (req, res) => { // THIS MUST BE BENEATH THE OTHER APP
   res.render("urls_show", templateVars);
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
+
 
 // hello test
