@@ -1,9 +1,11 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 3000; // default port 8080
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser')
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
+app.use(cookieParser())
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -11,20 +13,21 @@ const urlDatabase = {
 };
 
 function generateRandomString() {
-  const alphaNum = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  const alphaNumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   let randomString = ''
   for (let i = 0; i < 6; i++) {
-    randomString += alphaNum[Math.floor(Math.random()*36)];
+    randomString += alphaNumeric[Math.floor(Math.random()*62)];
   }
   return randomString;
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  templateVars = { username: req.cookies["username"] }; // modified!!!!!!!!!!!!!!!!!!
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls.json", (req, res) => {
@@ -36,17 +39,27 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"]}; // MAY19
   res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  console.log("req.body:",req.body);  // Log the POST request body to the console
+  console.log("req.body:",req.body); 
   const shortURL = generateRandomString()
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);
 });
+
+app.post('/login', (req,res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+})
+
+app.post("/logout", (req,res)=>{
+  res.clearCookie("username");
+  res.redirect("/urls") //CHANGE ??
+})
 
 
 app.get("/u/:shortURL", (req, res) => {
@@ -70,7 +83,7 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => { // THIS MUST BE BENEATH THE OTHER APP.GET LINES that begin with /urls.
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }; // MODIFIED!!!!!!
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] }; // MODIFIED!!!!!!
   res.render("urls_show", templateVars);
 });
 
