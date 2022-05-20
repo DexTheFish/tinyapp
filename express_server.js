@@ -2,10 +2,11 @@ const express = require("express");
 const app = express();
 const PORT = 3000; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const { resolveInclude } = require("ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-app.use(cookieParser())
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -23,7 +24,16 @@ const users = {
     email: "Ye@yeezy.com", 
     password: "scoopty-whoop"
   }
-}
+};
+
+function isNewEmail(emailAddress) {
+  for (const u in users) {
+    if (users[u].email.toUpperCase() === emailAddress.toUpperCase()) {
+      return false;
+    }
+  }
+  return true;
+};
 
 function generateRandomString(stringLength) {
   const alphaNumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -32,14 +42,16 @@ function generateRandomString(stringLength) {
     randomString += alphaNumeric[Math.floor(Math.random()*62)];
   }
   return randomString;
-}
+};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-app.get("/register", (req, res) => { // NEW
-  templateVars = { username: req.cookies["username"] };
+app.get("/register", (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  templateVars = { user };
+    //templateVars = { username: req.cookies["username"] };
   res.render("registration", templateVars);
 });
 
@@ -47,14 +59,18 @@ app.post("/register", (req, res) => {
   const newUserId = generateRandomString(8);
   const newUserEmail = req.body.email;
   const newUserPassword = req.body.password;
-  users[newUserId] = {
-    id: newUserId,
-    email: newUserEmail,
-    password: newUserPassword
+  if (newUserEmail && newUserPassword && isNewEmail(newUserEmail)) {
+    users[newUserId] = {
+      id: newUserId,
+      email: newUserEmail,
+      password: newUserPassword
+    };
+    res.cookie("user_id", newUserId);
+    res.redirect("/urls");
+  } else {
+    res.status(400);
+    res.send('Error 400');
   };
-res.cookie("user_id", newUserId);
-console.log(users);
-res.redirect("/urls");
 });
 
 app.get("/", (req, res) => {
@@ -66,7 +82,9 @@ app.get("/hello", (req, res) => { // example
 });
 
 app.get("/urls/new", (req, res) => {
-  templateVars = { username: req.cookies["username"] };
+  const user = users[req.cookies["user_id"]];
+  templateVars = { user };
+  //templateVars = { username: req.cookies["username"] };
   res.render("urls_new", templateVars);
 });
 
@@ -75,12 +93,12 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  const user = users[req.cookies["user_id"]];
+  const templateVars = { urls: urlDatabase, user };
   res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  console.log("req.body:",req.body); 
   const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
@@ -88,20 +106,18 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.cookie("username", req.body.username);
+  //res.cookie("user_id", req.body.email);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  console.log('testing the database:', urlDatabase);
-  console.log('param: ', req.params);
   res.redirect(longURL);
 });
 
@@ -118,10 +134,7 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => { // THIS MUST BE BENEATH THE OTHER APP.GET LINES that begin with /urls.
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] }; // MODIFIED!!!!!!
+  const user = users[req.cookies["user_id"]];
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user }; // MODIFIED!!!!!!
   res.render("urls_show", templateVars);
 });
-
-
-
-// hello test
