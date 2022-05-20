@@ -12,10 +12,23 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-function generateRandomString() {
+const users = { 
+  "zezima": {
+    id: "zezima", 
+    email: "goat@runescape.com", 
+    password: "buying-gf"
+  },
+ "kanyeWest": {
+    id: "kanyeWest", 
+    email: "Ye@yeezy.com", 
+    password: "scoopty-whoop"
+  }
+}
+
+function generateRandomString(stringLength) {
   const alphaNumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   let randomString = ''
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < stringLength; i++) {
     randomString += alphaNumeric[Math.floor(Math.random()*62)];
   }
   return randomString;
@@ -23,6 +36,25 @@ function generateRandomString() {
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
+});
+
+app.get("/register", (req, res) => { // NEW
+  templateVars = { username: req.cookies["username"] };
+  res.render("registration", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  const newUserId = generateRandomString(8);
+  const newUserEmail = req.body.email;
+  const newUserPassword = req.body.password;
+  users[newUserId] = {
+    id: newUserId,
+    email: newUserEmail,
+    password: newUserPassword
+  };
+res.cookie("user_id", newUserId);
+console.log(users);
+res.redirect("/urls");
 });
 
 app.get("/", (req, res) => {
@@ -49,21 +81,21 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log("req.body:",req.body); 
-  const shortURL = generateRandomString()
+  const shortURL = generateRandomString(6);
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.post('/login', (req,res) => {
+app.post('/login', (req, res) => {
   res.cookie("username", req.body.username);
   res.redirect("/urls");
-})
+});
 
-app.post("/logout", (req,res)=>{
+app.post("/logout", (req, res) => {
   res.clearCookie("username");
-  res.redirect("/urls") //CHANGE ??
-})
+  res.redirect("/urls");
+});
 
 
 app.get("/u/:shortURL", (req, res) => {
