@@ -8,6 +8,7 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" href="/register">Register an Account</a>
       </div>
     </div>
     <% if(user){ %>
@@ -16,8 +17,7 @@
         <button class="btn btn-danger" type="submit">Logout</button>
       </form>  
     <% } else{ %>
-      <form method="POST" action="/login">
-        <input name="email" value="email">
+      <form method="GET" action="/login">
         <button class="btn btn-primary" type="submit">Sign In</button>
       </form>  
    <% } %>

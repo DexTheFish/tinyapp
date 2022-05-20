@@ -4,6 +4,7 @@ const PORT = 3000; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const { resolveInclude } = require("ejs");
+const { isNewEmail, generateRandomString} = require("./helpers");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(cookieParser());
@@ -12,46 +13,41 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-
-const users = { 
+const users = {
   "zezima": {
-    id: "zezima", 
-    email: "goat@runescape.com", 
+    id: "zezima",
+    email: "goat@runescape.com",
     password: "buying-gf"
   },
- "kanyeWest": {
-    id: "kanyeWest", 
-    email: "Ye@yeezy.com", 
+  "kanyeWest": {
+    id: "kanyeWest",
+    email: "Ye@yeezy.com",
     password: "scoopty-whoop"
   }
 };
-
-function isNewEmail(emailAddress) {
-  for (const u in users) {
-    if (users[u].email.toUpperCase() === emailAddress.toUpperCase()) {
-      return false;
-    }
-  }
-  return true;
-};
-
-function generateRandomString(stringLength) {
-  const alphaNumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let randomString = ''
-  for (let i = 0; i < stringLength; i++) {
-    randomString += alphaNumeric[Math.floor(Math.random()*62)];
-  }
-  return randomString;
-};
-
+// const isNewEmail = function(emailAddress) {
+//   for (const u in users) {
+//     if (users[u].email.toUpperCase() === emailAddress.toUpperCase()) {
+//       return false;
+//     }
+//   }
+//   return true;
+// };
+// const generateRandomString = function(stringLength) {
+//   const alphaNumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//   let randomString = '';
+//   for (let i = 0; i < stringLength; i++) {
+//     randomString += alphaNumeric[Math.floor(Math.random() * 62)];
+//   }
+//   return randomString;
+// };
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
 app.get("/register", (req, res) => {
   const user = users[req.cookies["user_id"]];
-  templateVars = { user };
-    //templateVars = { username: req.cookies["username"] };
+  const templateVars = { user };
   res.render("registration", templateVars);
 });
 
@@ -70,7 +66,7 @@ app.post("/register", (req, res) => {
   } else {
     res.status(400);
     res.send('Error 400');
-  };
+  }
 });
 
 app.get("/", (req, res) => {
@@ -83,8 +79,7 @@ app.get("/hello", (req, res) => { // example
 
 app.get("/urls/new", (req, res) => {
   const user = users[req.cookies["user_id"]];
-  templateVars = { user };
-  //templateVars = { username: req.cookies["username"] };
+  const templateVars = { user };
   res.render("urls_new", templateVars);
 });
 
@@ -106,8 +101,16 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  //res.cookie("user_id", req.body.email);
-  res.redirect("/urls");
+  const user = users[req.cookies["user_id"]];
+  const templateVars = { user };
+  // to be updated
+  res.render("login", templateVars);
+});
+
+app.get('/login', (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  const templateVars = { user };
+  res.render("login", templateVars);
 });
 
 app.post("/logout", (req, res) => {
