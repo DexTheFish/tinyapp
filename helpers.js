@@ -1,4 +1,4 @@
-const isNewEmail = function(emailAddress) {
+const isNewEmail = function(emailAddress, users) {
   for (const u in users) {
     if (users[u].email.toUpperCase() === emailAddress.toUpperCase()) {
       return false;
@@ -14,4 +14,13 @@ const generateRandomString = function(stringLength) {
   }
   return randomString;
 };
-module.exports = { isNewEmail, generateRandomString};
+const getUserByEmail = function(emailAddress, users) {
+  for (let u in users) {
+    if (users[u].email.toUpperCase() === emailAddress.toUpperCase()) {
+      return u;
+    }
+  }
+};
+
+
+module.exports = { isNewEmail, generateRandomString, getUserByEmail};

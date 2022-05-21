@@ -4,7 +4,7 @@ const PORT = 3000; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const { resolveInclude } = require("ejs");
-const { isNewEmail, generateRandomString} = require("./helpers");
+const { isNewEmail, generateRandomString, getUserByEmail } = require("./helpers");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(cookieParser());
@@ -25,22 +25,6 @@ const users = {
     password: "scoopty-whoop"
   }
 };
-// const isNewEmail = function(emailAddress) {
-//   for (const u in users) {
-//     if (users[u].email.toUpperCase() === emailAddress.toUpperCase()) {
-//       return false;
-//     }
-//   }
-//   return true;
-// };
-// const generateRandomString = function(stringLength) {
-//   const alphaNumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-//   let randomString = '';
-//   for (let i = 0; i < stringLength; i++) {
-//     randomString += alphaNumeric[Math.floor(Math.random() * 62)];
-//   }
-//   return randomString;
-// };
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -55,7 +39,7 @@ app.post("/register", (req, res) => {
   const newUserId = generateRandomString(8);
   const newUserEmail = req.body.email;
   const newUserPassword = req.body.password;
-  if (newUserEmail && newUserPassword && isNewEmail(newUserEmail)) {
+  if (newUserEmail && newUserPassword && isNewEmail(newUserEmail, users)) {
     users[newUserId] = {
       id: newUserId,
       email: newUserEmail,
@@ -101,9 +85,17 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const enteredEmail = req.body.email;
+  const enteredPassword = req.body.password;
+  const userId = getUserByEmail(enteredEmail, users);
+  if (userId && users[userId].password === enteredPassword) {
+    res.cookie("user_id", userId);
+    res.redirect("/urls");
+  } else {
+    res.status(403);
+    res.send('Error 403');
+  }
   const templateVars = { user };
-  // to be updated
   res.render("login", templateVars);
 });
 
@@ -117,7 +109,6 @@ app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/urls");
 });
-
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
