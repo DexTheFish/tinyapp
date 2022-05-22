@@ -22,5 +22,15 @@ const getUserByEmail = function(emailAddress, users) {
   }
 };
 
+const getURLSbyUserId = function(id, URLdatabase) {
+  let userURLS = {};
+  for (let url in URLdatabase) {
+    if (URLdatabase[url].userID === id) {
+      userURLS[url] = URLdatabase[url];
+    }
+  }
+  return userURLS;
+}
 
-module.exports = { isNewEmail, generateRandomString, getUserByEmail};
+
+module.exports = { isNewEmail, generateRandomString, getUserByEmail, getURLSbyUserId};
