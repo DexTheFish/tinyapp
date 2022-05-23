@@ -74,11 +74,13 @@ app.get("/", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
+  // display an easter egg for curious users
   res.send("<html><body>Hello <b>World</b>! You have found the TinyURL Easter Egg!</body></html>\n");
   console.log(users);
 });
 
 app.get("/urls/new", (req, res) => {
+  // display a page for creating new short urls
   const user = users[req.session.user_id];
   const templateVars = { user };
   if (user) {
@@ -93,6 +95,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  // display all of the URLs for a given user
   const user = users[req.session.user_id];
   if (user) {
     const userURLdatabase = getURLSbyUserId(user.id, urlDatabase);
@@ -104,6 +107,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  // generate a new URL for a user
   if (req.session["user_id"]) {
     const shortURL = generateRandomString(6);
     const longURL = req.body.longURL;
@@ -119,6 +123,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
+  // allow a user to log in, or return an error if the credentials are bad
   const enteredEmail = req.body.email;
   const enteredPassword = req.body.password;
   const userId = getUserByEmail(enteredEmail, users);
@@ -148,6 +153,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  // deletes a url if it is connected to the current user
   const user = users[req.session.user_id];
   if (user && user.id === urlDatabase[req.params.shortURL].userID) {
     delete urlDatabase[req.params.shortURL];
@@ -159,6 +165,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
+  // update a short URL if it is connected to the current user
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
   const user = users[req.session.user_id];
@@ -177,6 +184,7 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  // display the edit page for a url, if it is connected to the current user
   const user = users[req.session.user_id];
   if (user && urlDatabase[req.params.shortURL] && user.id === urlDatabase[req.params.shortURL].userID) {
     const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user };
